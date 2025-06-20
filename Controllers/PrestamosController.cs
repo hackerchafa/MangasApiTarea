@@ -44,16 +44,21 @@ namespace MangaApi.Controllers
             return Ok($"Prestamo con ID {id} eliminado.");
         }
 
-        // ✅ Método PUT para actualizar préstamo
+        // ✅ PUT usando DTO para evitar modificar Id, MangaId y Cliente
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] Prestamo prestamo)
+        public async Task<IActionResult> Put(int id, [FromBody] PrestamoUpdateDto dto)
         {
-            if (id != prestamo.Id)
-                return BadRequest("El ID en la URL no coincide con el del objeto.");
+            var prestamoExistente = await _repo.GetPrestamoByIdAsync(id);
+            if (prestamoExistente == null)
+                return NotFound($"No se encontró el préstamo con ID {id}.");
 
-            await _repo.UpdatePrestamoAsync(prestamo);
-            return Ok(prestamo);
+            // Solo se actualizan los campos permitidos
+            prestamoExistente.FechaPrestamo = dto.FechaPrestamo;
+            prestamoExistente.FechaDevolucionEsperada = dto.FechaDevolucionEsperada;
+            prestamoExistente.FechaDevolucionReal = dto.FechaDevolucionReal;
+
+            await _repo.UpdatePrestamoAsync(prestamoExistente);
+            return Ok(prestamoExistente);
         }
     }
 }
-
