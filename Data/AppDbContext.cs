@@ -8,5 +8,6 @@ namespace MangaApi.Data
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<Manga> Mangas { get; set; }
+        public DbSet<Prestamo> Prestamos { get; set; } // 👈 NUEVA TABLA AGREGADA
     }
 }

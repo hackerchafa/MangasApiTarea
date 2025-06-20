@@ -58,7 +58,7 @@ namespace MangaApi.Controllers
             return Ok($"Manga con ID {id} eliminado correctamente.");
         }
 
-        // ✅ Buscar mangas por ID, título, autor o género (búsqueda avanzada)
+        // ✅ Buscar mangas por ID, título, autor o género
         [HttpGet("buscar")]
         public async Task<IActionResult> Buscar(
             [FromQuery] int? id,
@@ -69,7 +69,34 @@ namespace MangaApi.Controllers
             var resultados = await _repo.BuscarMangasAsync(id, titulo, autor, genero);
             return Ok(resultados);
         }
+
+        // ✅ Obtener mangas con paginación
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var todos = await _repo.GetMangasAsync();
+
+            var totalRegistros = todos.Count();
+            var totalPaginas = (int)Math.Ceiling(totalRegistros / (double)pageSize);
+
+            var mangasPaginados = todos
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var respuesta = new PagedMangaResponse
+            {
+                Mangas = mangasPaginados,
+                PaginaActual = pageNumber,
+                TamanoPagina = pageSize,
+                TotalRegistros = totalRegistros,
+                TotalPaginas = totalPaginas
+            };
+
+            return Ok(respuesta);
+        }
     }
 }
+
 
 

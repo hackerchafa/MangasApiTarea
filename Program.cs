@@ -11,8 +11,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection")!)
 );
 
-// Repositorio
+// Repositorios
 builder.Services.AddScoped<IMangaRepository, MangaRepository>();
+builder.Services.AddScoped<IPrestamoRepository, PrestamoRepository>(); // ✅ AGREGADO
 
 // Controladores y Swagger
 builder.Services.AddControllers();
