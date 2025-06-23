@@ -1,17 +1,21 @@
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-preview AS base
-WORKDIR /app
-EXPOSE 80
-
+# Etapa 1: Build
 FROM mcr.microsoft.com/dotnet/sdk:9.0-preview AS build
 WORKDIR /src
-COPY ["MangaApi/MangaApi.csproj", "MangaApi/"]
-RUN dotnet restore "MangaApi/MangaApi.csproj"
+
+# Copiar el archivo .csproj y restaurar dependencias
+COPY ["MangaApi/MangaApi.csproj", "MangasRepo/"]
+RUN dotnet restore "MangasRepo/MangaApi.csproj"
+
+# Copiar todo el código
 COPY . .
-WORKDIR "/src/MangaApi"
-RUN dotnet build "MangaApi.csproj" -c Release -o /app/build
+
+# Publicar la aplicación
+WORKDIR "/src/MangasRepo"
 RUN dotnet publish "MangaApi.csproj" -c Release -o /app/publish
 
-FROM base AS final
+# Etapa 2: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-preview AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "MangaApi.dll"]
+
+ENTRYPOINT ["dotnet", "MangasRepo.dll"]
