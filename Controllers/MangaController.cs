@@ -1,5 +1,6 @@
 using MangaApi.Models;
 using MangaApi.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MangaApi.Controllers
@@ -15,7 +16,7 @@ namespace MangaApi.Controllers
             _repo = repo;
         }
 
-        // ✅ Obtener todos los mangas
+        // ✅ Público
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -23,7 +24,8 @@ namespace MangaApi.Controllers
             return Ok(mangas);
         }
 
-        // ✅ Agregar un manga nuevo
+        // ✅ Agregar un manga nuevo (protegido)
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Manga manga)
         {
@@ -31,7 +33,8 @@ namespace MangaApi.Controllers
             return CreatedAtAction(nameof(Get), new { id = manga.Id }, manga);
         }
 
-        // ✅ Actualizar un manga existente
+        // ✅ Actualizar manga (protegido)
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Manga manga)
         {
@@ -46,7 +49,8 @@ namespace MangaApi.Controllers
             return Ok(manga);
         }
 
-        // ✅ Eliminar un manga por ID
+        // ✅ Eliminar manga (protegido)
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -58,7 +62,7 @@ namespace MangaApi.Controllers
             return Ok($"Manga con ID {id} eliminado correctamente.");
         }
 
-        // ✅ Buscar mangas por ID, título, autor o género
+        // ✅ Buscar mangas (público)
         [HttpGet("buscar")]
         public async Task<IActionResult> Buscar(
             [FromQuery] int? id,
@@ -70,7 +74,7 @@ namespace MangaApi.Controllers
             return Ok(resultados);
         }
 
-        // ✅ Obtener mangas con paginación
+        // ✅ Obtener mangas con paginación (público)
         [HttpGet("paged")]
         public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
@@ -97,6 +101,3 @@ namespace MangaApi.Controllers
         }
     }
 }
-
-
-

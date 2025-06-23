@@ -1,5 +1,6 @@
 using MangaApi.Models;
 using MangaApi.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MangaApi.Controllers
@@ -30,6 +31,8 @@ namespace MangaApi.Controllers
             return Ok(prestamo);
         }
 
+        // ✅ Solo queda este POST y está protegido
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Prestamo prestamo)
         {
@@ -37,6 +40,7 @@ namespace MangaApi.Controllers
             return CreatedAtAction(nameof(GetById), new { id = prestamo.Id }, prestamo);
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -45,6 +49,7 @@ namespace MangaApi.Controllers
         }
 
         // ✅ PUT usando DTO para evitar modificar Id, MangaId y Cliente
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] PrestamoUpdateDto dto)
         {
