@@ -1,27 +1,23 @@
-using MangaApi.Models; // Modelos de datos
-using MangaApi.Repositories; // Acceso a los repositorios
-using Microsoft.AspNetCore.Authorization; // Para proteger endpoints con JWT
-using Microsoft.AspNetCore.Mvc; // Funcionalidad de controladores Web API
+using MangaApi.Models;
+using MangaApi.Repositories;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace MangaApi.Controllers
 {
-    // Define la ruta base para este controlador: api/manga
     [Route("api/[controller]")]
-    [ApiController] // Indica que es un controlador de API
+    [ApiController]
+    [Authorize] // Protege todos los endpoints de este controlador
     public class MangaController : ControllerBase
     {
-        private readonly IMangaRepository _repo; // Repositorio de mangas
+        private readonly IMangaRepository _repo;
 
-        // Inyección de dependencias del repositorio
         public MangaController(IMangaRepository repo)
         {
             _repo = repo;
         }
 
-        // ================== ENDPOINTS =====================
-
         // GET: api/manga
-        // Obtiene todos los mangas (público)
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -30,8 +26,6 @@ namespace MangaApi.Controllers
         }
 
         // POST: api/manga
-        // Agrega un nuevo manga (protegido con JWT)
-        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Manga manga)
         {
@@ -40,8 +34,6 @@ namespace MangaApi.Controllers
         }
 
         // PUT: api/manga/{id}
-        // Actualiza un manga existente (protegido con JWT)
-        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Manga manga)
         {
@@ -57,8 +49,6 @@ namespace MangaApi.Controllers
         }
 
         // DELETE: api/manga/{id}
-        // Elimina un manga (protegido con JWT)
-        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -70,7 +60,7 @@ namespace MangaApi.Controllers
             return Ok($"Manga con ID {id} eliminado.");
         }
 
-        // ✅ Buscar mangas (público)
+        // GET: api/manga/buscar
         [HttpGet("buscar")]
         public async Task<IActionResult> Buscar(
             [FromQuery] int? id,
@@ -82,7 +72,7 @@ namespace MangaApi.Controllers
             return Ok(resultados);
         }
 
-        // ✅ Obtener mangas con paginación (público)
+        // GET: api/manga/paged
         [HttpGet("paged")]
         public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
