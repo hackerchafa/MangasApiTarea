@@ -1,21 +1,27 @@
-using MangaApi.Models;
-using MangaApi.Repositories;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using MangaApi.Models; // Modelos de datos
+using MangaApi.Repositories; // Acceso a los repositorios
+using Microsoft.AspNetCore.Authorization; // Para proteger endpoints con JWT
+using Microsoft.AspNetCore.Mvc; // Funcionalidad de controladores Web API
 
 namespace MangaApi.Controllers
 {
+    // Controlador para gestionar préstamos de mangas
     [Route("api/[controller]")]
     [ApiController]
     public class PrestamosController : ControllerBase
     {
-        private readonly IPrestamoRepository _repo;
+        private readonly IPrestamoRepository _repo; // Repositorio de préstamos
 
+        // Inyección de dependencias del repositorio
         public PrestamosController(IPrestamoRepository repo)
         {
             _repo = repo;
         }
 
+        // ================== ENDPOINTS =====================
+
+        // GET: api/prestamos
+        // Obtiene todos los préstamos (público)
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -23,6 +29,8 @@ namespace MangaApi.Controllers
             return Ok(prestamos);
         }
 
+        // GET: api/prestamos/{id}
+        // Obtiene un préstamo por ID (público)
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -31,7 +39,8 @@ namespace MangaApi.Controllers
             return Ok(prestamo);
         }
 
-        // ✅ Solo queda este POST y está protegido
+        // POST: api/prestamos
+        // Agrega un nuevo préstamo (protegido con JWT)
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Prestamo prestamo)
@@ -40,6 +49,8 @@ namespace MangaApi.Controllers
             return CreatedAtAction(nameof(GetById), new { id = prestamo.Id }, prestamo);
         }
 
+        // DELETE: api/prestamos/{id}
+        // Elimina un préstamo (protegido con JWT)
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
@@ -48,7 +59,8 @@ namespace MangaApi.Controllers
             return Ok($"Prestamo con ID {id} eliminado.");
         }
 
-        // ✅ PUT usando DTO para evitar modificar Id, MangaId y Cliente
+        // PUT: api/prestamos/{id}
+        // Actualiza un préstamo existente (protegido con JWT)
         [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] PrestamoUpdateDto dto)
