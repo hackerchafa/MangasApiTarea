@@ -9,9 +9,8 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// =================== JWT CONFIG ==========================
+// ======================= JWT CONFIG =======================
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-
 builder.Services.AddAuthentication(options =>
 {
 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -29,24 +28,26 @@ ValidIssuer = jwtSettings["Issuer"],
 ValidAudience = jwtSettings["Audience"],
 IssuerSigningKey = new SymmetricSecurityKey(
 Encoding.UTF8.GetBytes(jwtSettings["Key"]
-?? throw new InvalidOperationException("JWT Key no configurada")))
+?? throw new InvalidOperationException("JWT Key no configurada"))
+)
 };
 });
 
 builder.Services.AddAuthorization();
 
-// ================ DB CONNECTION ===========================
+// ======================= DB CONTEXT =======================
 builder.Services.AddDbContext<AppDbContext>(options =>
 options.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection")!)
 );
 
-// ================ DEPENDENCY INJECTION ====================
+// ======================= DEPENDENCIAS ======================
 builder.Services.AddScoped<IMangaRepository, MangaRepository>();
 builder.Services.AddScoped<IPrestamoRepository, PrestamoRepository>();
 
-// ================ CONTROLLERS & SWAGGER ===================
 builder.Services.AddControllers();
 
+// ======================= SWAGGER CONFIG ====================
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Manga API", Version = "v1" });
@@ -73,36 +74,34 @@ c.AddSecurityRequirement(new OpenApiSecurityRequirement
 });
 });
 
-// ================ CORS ======================================
+// ======================= CORS =============================
 builder.Services.AddCors(options =>
 {
 options.AddPolicy("FrontendPolicy", policy =>
 {
-policy.WithOrigins("http://localhost:3000") // o el dominio real
+policy.WithOrigins("http://localhost:3000")
 .AllowAnyHeader()
 .AllowAnyMethod();
 });
 });
 
+// ======================= BUILD APP ========================
 var app = builder.Build();
 
-// ================ DESARROLLO ================================
-if (app.Environment.IsDevelopment())
-{
-app.UseDeveloperExceptionPage(); // muestra errores 500 detallados
-}
-
-// ================ MIDDLEWARES ==============================
-app.UseMiddleware<IPFilterMiddleware>(); // IP Filtering personalizado
 app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-c.SwaggerEndpoint("/swagger/v1/swagger.json", "Manga API v1");
-});
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+
+// Orden correcto de middlewares
 app.UseCors("FrontendPolicy");
+
+// 🚫 IP Filter personalizado
+app.UseMiddleware<IPFilterMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
 app.Run();
