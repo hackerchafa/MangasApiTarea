@@ -4,46 +4,41 @@ using System.Threading.Tasks;
 
 namespace MangaApi.Middleware
 {
-    public class IPFilterMiddleware
-    {
+public class IPFilterMiddleware
+{
         private readonly RequestDelegate _next;
-        // Lista de IPs permitidas
-        private readonly string[] _allowedIps = new[]
-        {
-        "187.155.101.200", // Tu IP pública
-        "127.0.0.1",       // localhost IPv4
-        "::1"              // localhost IPv6
+            // Lista actualizada con tu nueva IP
+    private readonly string[] _allowedIps = new[]
+    {
+        "187.184.159.192", // IP anterior
+        "187.155.101.200", // ✅ IP nueva permitida
+        "127.0.0.1",       // Localhost IPv4
+        "::1"              // Localhost IPv6
     };
 
-        public IPFilterMiddleware(RequestDelegate next)
+    public IPFilterMiddleware(RequestDelegate next)
+    {
+        _next = next;
+    }
+
+    public async Task Invoke(HttpContext context)
+    {
+        string? clientIp = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+
+        if (string.IsNullOrEmpty(clientIp))
         {
-            _next = next;
+            clientIp = context.Connection.RemoteIpAddress?.ToString();
         }
 
-        public async Task Invoke(HttpContext context)
+        if (!_allowedIps.Any(ip => clientIp?.Contains(ip) == true))
         {
-            string? forwardedFor = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();
-            string? clientIp = null;
-
-            if (!string.IsNullOrEmpty(forwardedFor))
-            {
-                // Tomar solo la primera IP (la del cliente real)
-                clientIp = forwardedFor.Split(',').First().Trim();
-            }
-            else
-            {
-                // Si no viene del proxy, usar la IP directa
-                clientIp = context.Connection.RemoteIpAddress?.ToString();
-            }
-
-            if (!_allowedIps.Contains(clientIp))
-            {
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                await context.Response.WriteAsync($"Acceso denegado. Tu IP: {clientIp}");
-                return;
-            }
-
-            await _next(context);
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            await context.Response.WriteAsync($"Acceso denegado. Tu IP: {clientIp}");
+            return;
         }
+
+        await _next(context);
     }
 }
+}
+
